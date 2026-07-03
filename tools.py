@@ -14,6 +14,8 @@ def set_timeout(seconds: int) -> str:
     wolfram_timeout = seconds
     return f"超时时间已设置为 {seconds} 秒"
 
+def get_timeout() -> int:
+    return wolfram_timeout
 
 def test_connection() -> str:
     """测试 wolframscript.exe 是否可用"""
@@ -69,12 +71,12 @@ def solve_math(code: str) -> str:
         return f"错误: {str(e)}"
 
 
-def plot_function(expr: str, x_min: float = -10, x_max: float = 10) -> str:
+def plot(expr: str, x_min: float = -10, x_max: float = 10) -> str:
     """
     绘制函数图像, 保存为图片
     
     Args:
-        expr: 函数表达式, 如 "x^2" 或 "Sin[x]"
+        expr: 函数表达式, 如"Sin[x/Pi]"
         x_min: x轴最小值, 默认 -10
         x_max: x轴最大值, 默认 10
     
@@ -82,7 +84,7 @@ def plot_function(expr: str, x_min: float = -10, x_max: float = 10) -> str:
         str: 图片保存路径, 或错误信息
     """
     if not WOLFRAMSCRIPT_PATH:
-        return "错误: 错误: 未配置 WOLFRAMSCRIPT_PATH, 请你在 .env 文件中写入 WOLFRAMSCRIPT_PATH=你的 wolframscript.exe 的绝对路径"
+        return "错误: 未配置 WOLFRAMSCRIPT_PATH, 请你在 .env 文件中写入 WOLFRAMSCRIPT_PATH=你的 wolframscript.exe 的绝对路径"
     
     # 创建 images 文件夹
     images_dir = os.path.join(os.path.dirname(__file__), "images")
@@ -93,7 +95,7 @@ def plot_function(expr: str, x_min: float = -10, x_max: float = 10) -> str:
     filepath = os.path.join(images_dir, filename)
     filepath_posix = filepath.replace("\\", "/")
     
-    # 构建绘图命令
+    # 绘图命令
     wolfram_code = f'Export["{filepath_posix}", Plot[{expr}, {{x, {x_min}, {x_max}}}], "PNG"];'
     
     try:
