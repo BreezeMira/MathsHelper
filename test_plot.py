@@ -1,16 +1,17 @@
-from tools import plot_function, query_wolfram_with_plot
+from tools import plot_function
 
-print("=" * 60)
-print("测试：绘制 y = x^2 图像")
-print("=" * 60)
+print("=" * 50)
+print("测试：绘制 y = x^2")
+print("=" * 50)
 
-result = plot_function("x^2", x_min=-10, x_max=10)
-print(f"图片保存路径：{result}")
+result = plot_function("x^2", -5, 5)
 
-print("\n" + "=" * 60)
-print("测试：组合查询（文本 + 图像）")
-print("=" * 60)
+print(f"结果：{result}")
 
-full_result = query_wolfram_with_plot("Plot[x^2, {x, -10, 10}]", need_plot=True)
-print(f"文本结果：{full_result['text']}")
-print(f"图片路径：{full_result['image']}")
+if not result.startswith("错误") and not result.startswith("绘图失败"):
+    print(f"✅ 图片已保存到：{result}")
+    import os
+    size = os.path.getsize(result)
+    print(f"文件大小：{size} 字节")
+else:
+    print("❌ 绘图失败")

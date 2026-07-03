@@ -1,34 +1,34 @@
 import os
 import subprocess
+import uuid
 from dotenv import load_dotenv
+
 load_dotenv()
 
-#从.env读取wolfram.exe的文件路径
-WOLFRAM_EXE_PATH = os.getenv("WOLFRAM_EXE_PATH")
+# 从 .env 读取 wolframscript.exe 的文件路径
+WOLFRAMSCRIPT_PATH = os.getenv("WOLFRAMSCRIPT_PATH")
+
+
 def test_connection() -> str:
-    """测试 wolfram.exe 是否可用"""
-    if not WOLFRAM_EXE_PATH:
-        return "错误：未配置 WOLFRAM_EXE_PATH, 请你在.env文件中写入 WOLFRAM_EXE_PATH=你的wolfram.exe的绝对路径"
+    """测试 wolframscript.exe 是否可用"""
+    if not WOLFRAMSCRIPT_PATH:
+        return "错误：未配置 WOLFRAMSCRIPT_PATH"
     
     try:
-        # 执行 Print[2+2]; 然后退出
         result = subprocess.run(
-            [WOLFRAM_EXE_PATH, "-noprompt", "-run", "Print[2+2]; Exit[]"],
-            #"-noprompt"用来让wolfram.exe不要有多余输出，Exit[]是必要的，否则不退出这个会导致整个程序卡在这里
-            #wolfram对"-batch"不能正确处理，它不会退出命令行，甚至没有结果,所以用"-run"
+            [WOLFRAMSCRIPT_PATH, "-code", "2+2"],  # ← 直接执行表达式
             capture_output=True,
             text=True,
             timeout=30
         )
         if result.returncode == 0:
-            return f"wolfram.exe 连接成功! 2+2 = {result.stdout.strip()}"
+            return f"wolframscript.exe 连接成功!2+2 = {result.stdout.strip()}"
         else:
-            return f"连接失败: {result.stderr}"
+            return f"连接失败：{result.stderr}"
     except subprocess.TimeoutExpired:
-        return "错误：执行超(30秒)"
+        return "错误:执行超时(30秒)S"
     except Exception as e:
         return f"错误：{str(e)}"
-    
 
 def solve_math(code: str) -> str:
     """
@@ -40,16 +40,13 @@ def solve_math(code: str) -> str:
     Returns:
         str: 计算结果
     """
-
-    if not WOLFRAM_EXE_PATH:
-        return "错误：未配置 WOLFRAM_EXE_PATH, 请你在.env文件中写入 WOLFRAM_EXE_PATH=你的wolfram.exe的绝对路径"
+    if not WOLFRAMSCRIPT_PATH:
+        return "错误：未配置 WOLFRAMSCRIPT_PATH, 请你在 .env 文件中写入 WOLFRAMSCRIPT_PATH=你的 wolframscript.exe 的绝对路径"
     
     try:
-        # 用 Print 包裹代码，确保输出
-        full_code = f"Print[{code}]; Exit[]"
-        
+        # wolframscript -code 直接执行代码并返回输出，不需要 Print 包裹
         result = subprocess.run(
-            [WOLFRAM_EXE_PATH, "-noprompt", "-run", full_code],
+            [WOLFRAMSCRIPT_PATH, "-code", code],
             capture_output=True,
             text=True,
             timeout=60
@@ -60,6 +57,51 @@ def solve_math(code: str) -> str:
         else:
             return f"计算失败：{result.stderr}"
     except subprocess.TimeoutExpired:
-        return "错误: 计算超时60秒"
+        return "错误: 计算超时(60秒)"
+    except Exception as e:
+        return f"错误：{str(e)}"
+
+
+def plot_function(expr: str, x_min: float = -10, x_max: float = 10) -> str:
+    """
+    绘制函数图像，保存为图片
+    
+    Args:
+        expr: 函数表达式, 如 "x^2" 或 "Sin[x]"
+        x_min: x轴最小值, 默认 -10
+        x_max: x轴最大值, 默认 10
+    
+    Returns:
+        str: 图片保存路径，或错误信息
+    """
+    if not WOLFRAMSCRIPT_PATH:
+        return "错误：未配置 WOLFRAMSCRIPT_PATH"
+    
+    # 创建 images 文件夹
+    images_dir = os.path.join(os.path.dirname(__file__), "images")
+    os.makedirs(images_dir, exist_ok=True)
+    
+    # 生成唯一文件名
+    filename = f"plot_{uuid.uuid4().hex[:8]}.png"
+    filepath = os.path.join(images_dir, filename)
+    filepath_posix = filepath.replace("\\", "/")
+    
+    # 构建绘图命令
+    wolfram_code = f'Export["{filepath_posix}", Plot[{expr}, {{x, {x_min}, {x_max}}}], "PNG"];'
+    
+    try:
+        result = subprocess.run(
+            [WOLFRAMSCRIPT_PATH, "-code", wolfram_code],
+            capture_output=True,
+            text=True,
+            timeout=120
+        )
+        
+        if result.returncode == 0 and os.path.exists(filepath) and os.path.getsize(filepath) > 0:
+            return filepath
+        else:
+            return f"绘图失败：{result.stderr}"
+    except subprocess.TimeoutExpired:
+        return "错误: 绘图超时(120秒)"
     except Exception as e:
         return f"错误：{str(e)}"
