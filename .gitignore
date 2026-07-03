@@ -1,4 +1,7 @@
 # 环境变量
+#.env里面填写WOLFRAMSCRIPT_PATH=你的wolframscript.exe的位置, 比如这样:  
+#   WOLFRAMSCRIPT_PATH=D:\Wolfram Mathematica\15.0\wolframscript.exe
+#注意，如果你同时有未激活的wolfram系列程序和激活的wolfram系列程序，删掉未激活的或激活它，因为这个wolframscript.exe可能会跑去运行你未激活的wolfram系列程序
 .env
 *.env
 
