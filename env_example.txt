@@ -1,0 +1,7 @@
+WOLFRAMSCRIPT_PATH=D:\Wolfram Mathematica\15.0\wolframscript.exe
+OPENAI_MODEL=deepseek-v4-pro
+REASONING_MODE=1
+OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+OPENAI_BASE_URL=https://api.deepseek.com
+MAX_STEPS=5
+LLM_TIME_OUT=60
